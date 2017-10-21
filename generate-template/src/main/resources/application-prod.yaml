@@ -1,0 +1,17 @@
+# for prod environment
+spring:
+  application:
+    name: #projectName
+  profiles: prod
+  boot:
+    admin:
+      url: http://spring-boot-admin
+      username: mobvoi
+      password: mobvoi
+  gson:
+    converter:
+      enable: false
+endpoints:
+  sensitive: false
+server:
+  port: 8080

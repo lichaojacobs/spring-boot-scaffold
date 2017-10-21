@@ -1,0 +1,23 @@
+# for local environment
+spring:
+  application:
+    name: #projectName
+  profiles: dev
+  boot:
+    admin:
+      url: http://ali-hz-hbase-name-node:12309
+      username: mobvoi
+      password: mobvoi
+  gson:
+    converter:
+      enable: false
+endpoints:
+  sensitive: false
+server:
+  port: 8080
+
+security:
+  user:
+    name: mobvoi
+    password: mobvoi
+    role: admin

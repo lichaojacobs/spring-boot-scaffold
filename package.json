@@ -1,0 +1,30 @@
+{
+  "name": "spring-boot-scaffold",
+  "version": "1.0.0",
+  "description": "A scaffold for creating spring boot web project",
+  "author": "chaoli",
+  "license": "MIT",
+  "homepage": "https://github.com/lichaojacobs/spring-boot-scaffold.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lichaojacobs/spring-boot-scaffold.git"
+  },
+  "keywords": [
+    "boilerplate",
+    "spring-boot",
+    "gradle"
+  ],
+  "dependencies": {
+    "chalk": "^2.2.0",
+    "commander": "^2.11.0",
+    "fs-extra": "^4.0.2",
+    "git-clone": "^0.1.0",
+    "path": "^0.12.7",
+    "readline-sync": "^1.4.7",
+    "replace": "^0.3.0"
+  },
+  "main": "index.js",
+  "bin": {
+    "spring-boot-scaffold": "./index.js"
+  }
+}
