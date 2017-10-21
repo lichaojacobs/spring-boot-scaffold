@@ -84,7 +84,7 @@ function initializeProject(projectName, groupId, artifactId, selectedModules, no
         }
 
         for (var i = 0; i < nonSelectedModules.length; i++) {
-            replaceVariables("#" + selectedModules[i] + "-settings", "")
+            replaceVariables("#" + nonSelectedModules[i] + "-settings", "")
             replaceVariables("#" + nonSelectedModules[i], "")
         }
 
@@ -123,7 +123,6 @@ function initializeProject(projectName, groupId, artifactId, selectedModules, no
 }
 
 function replaceVariables(regx, replacement) {
-    console.log("replace " + regx + "...");
     replace({
         regex: regx,
         replacement: replacement,
