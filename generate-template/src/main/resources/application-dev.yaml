@@ -16,8 +16,7 @@ endpoints:
 server:
   port: 8080
 
-security:
-  user:
-    name: mobvoi
-    password: mobvoi
-    role: admin
+#common-data-starter-jdbc-settings
+#common-data-starter-kylin-jdbc-settings
+#common-data-starter-cache-settings
+#common-data-starter-kafka-settings

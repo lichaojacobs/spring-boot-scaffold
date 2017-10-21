@@ -15,3 +15,8 @@ endpoints:
   sensitive: false
 server:
   port: 8080
+
+#common-data-starter-jdbc-settings
+#common-data-starter-kylin-jdbc-settings
+#common-data-starter-cache-settings
+#common-data-starter-kafka-settings

@@ -71,12 +71,20 @@ function initializeProject(projectName, groupId, artifactId, selectedModules, no
         fs.removeSync(".tmp");
 
         console.log("add modules...");
-        var settings = require("./settings")
+        var config = require("./settings")
         for (var i = 0; i < selectedModules.length; i++) {
-            replaceVariables("#" + selectedModules[i], settings.dependencies[selectedModules[i]].join("\r\n\t\t"))
+            //yaml 配置文件
+            var settingList = config.dependencies[selectedModules[i]]["settings"]
+            //某些组件不需要配置yaml
+            if (settingList.length != 0) {
+                replaceVariables("#" + selectedModules[i] + "-settings", config.dependencies[selectedModules[i]]["settings"].join("\r\n"))
+            }
+            //pom 配置文件
+            replaceVariables("#" + selectedModules[i], config.dependencies[selectedModules[i]]["dependency"].join("\r\n\t\t"))
         }
 
         for (var i = 0; i < nonSelectedModules.length; i++) {
+            replaceVariables("#" + selectedModules[i] + "-settings", "")
             replaceVariables("#" + nonSelectedModules[i], "")
         }
 
@@ -112,9 +120,6 @@ function initializeProject(projectName, groupId, artifactId, selectedModules, no
         console.log("project initialization done... \n");
 
     })
-
-    // 移动出模板文件
-    //fs.copySync("../generate-template", "./");
 }
 
 function replaceVariables(regx, replacement) {
