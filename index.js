@@ -1,7 +1,31 @@
 #!/usr/bin/env node
 "use strict";
 
-//common moudles
+String.prototype.replaceAll = function (exp, newStr) {
+    return this.replace(new RegExp(exp, "gm"), newStr);
+};
+
+String.prototype.format = function (args) {
+    var result = this;
+    if (arguments.length < 1) {
+        return result;
+    }
+
+    var data = arguments; // 如果模板参数是数组
+    if (arguments.length == 1 && typeof (args) == "object") {
+        // 如果模板参数是对象
+        data = args;
+    }
+    for (var key in data) {
+        var value = data[key];
+        if (undefined != value) {
+            result = result.replaceAll("\\{" + key + "\\}", value);
+        }
+    }
+    return result;
+}
+
+//common modules
 var projectModules = [
     'common-data-starter-jdbc',
     'common-data-starter-cache',
@@ -27,8 +51,8 @@ console.log(chalk.green(groupId));
 var artifactId = readlineSync.question('Enter artifactId: ');
 console.log(chalk.green(artifactId));
 
+var config = require("./settings")
 var chooseCondition = true;
-
 var selectedModules = [];
 var nonSelectedModules = projectModules;
 while (chooseCondition) {
@@ -41,6 +65,7 @@ while (chooseCondition) {
         chooseCondition = false
         continue;
     }
+    fillModuleSettings(projectModules[index])
     console.log(chalk.green(projectModules[index] + ' is added.'));
     //remove selected  module
     selectedModules.push(projectModules[index])
@@ -57,32 +82,28 @@ function initializeProject(projectName, groupId, artifactId, selectedModules, no
     checkDuplicateProject(appName);
     // 判断文件夹是否可以覆盖
     fs.ensureDirSync(projectName);
-
-    // 当前目录
-    var originalDirectory = process.cwd();
     process.chdir(root);
-    console.log(chalk.green("Initialize " + projectName + "..."));
+    console.log(chalk.green("Initialize {0} ...".format([projectName])));
 
     clone(templateUrl, ".tmp", {checkout: 'master'}, function () {
         fs.copySync("./.tmp/generate-template", "./");
         fs.removeSync(".tmp");
 
         console.log(chalk.green("Add modules..."));
-        var config = require("./settings")
         for (var i = 0; i < selectedModules.length; i++) {
             //yaml 配置文件
             var settingList = config.dependencies[selectedModules[i]]["settings"]
             //某些组件不需要配置yaml
             if (settingList.length != 0) {
-                replaceVariables("#" + selectedModules[i] + "-settings", config.dependencies[selectedModules[i]]["settings"].join("\r\n"))
+                replaceVariables("#{0}-settings".format([selectedModules[i]]), config.dependencies[selectedModules[i]]["settings"].join("\r\n"))
             }
             //pom 配置文件
-            replaceVariables("#" + selectedModules[i], config.dependencies[selectedModules[i]]["dependency"].join("\r\n\t\t"))
+            replaceVariables("#{0".format(selectedModules[i]), config.dependencies[selectedModules[i]]["dependency"].join("\r\n\t\t"))
         }
 
         for (var i = 0; i < nonSelectedModules.length; i++) {
-            replaceVariables("#" + nonSelectedModules[i] + "-settings", "")
-            replaceVariables("#" + nonSelectedModules[i], "")
+            replaceVariables("#{0}-settings".format(nonSelectedModules[i]), "")
+            replaceVariables("#{0}".format(nonSelectedModules[i]), "")
         }
 
         console.log(chalk.green("Replace groupId..."));
@@ -129,7 +150,6 @@ function replaceVariables(regx, replacement) {
     });
 }
 
-
 function checkDuplicateProject(appName) {
     var dependencies = ["react", "react-dom"];
     var devDependencies = ["chalk"];
@@ -138,5 +158,65 @@ function checkDuplicateProject(appName) {
     if (allDependencies.indexOf(appName) >= 0) {
         console.error("duplicate project: " + appName);
         process.exit(1);
+    }
+}
+
+function fillModuleSettings(selectedModule) {
+    if (selectedModule == "common-data-starter-jdbc") {
+        var defaultDataSourceName = config.defaultSettings[selectedModule]['dataSourceName']
+        var defaultUserName = config.defaultSettings[selectedModule]['userName']
+        var defaultPassword = config.defaultSettings[selectedModule]['password']
+        var defaultMasterUrl = config.defaultSettings[selectedModule]['masterUrl']
+
+        var dataSourceName = readlineSync.question('Enter dataSourceName: (default is: {0})'.format([chalk.green(defaultDataSourceName)]), {defaultInput: defaultDataSourceName});
+        var userName = readlineSync.question('Enter userName: (default is: {0})'.format([chalk.green(defaultUserName)]), {defaultInput: defaultUserName});
+        var password = readlineSync.question('Enter password: (default is: {0})'.format([chalk.green(defaultPassword)]), {defaultInput: defaultPassword});
+        var masterUrl = readlineSync.question('Enter masterUrl: (default is: {0})'.format([chalk.green(defaultMasterUrl)]), {defaultInput: defaultMasterUrl});
+
+        config.dependencies[selectedModule]['settings'][1] = config.dependencies[selectedModule]['settings'][1].format([dataSourceName])
+        config.dependencies[selectedModule]['settings'][2] = config.dependencies[selectedModule]['settings'][2].format([userName])
+        config.dependencies[selectedModule]['settings'][3] = config.dependencies[selectedModule]['settings'][3].format([password])
+        config.dependencies[selectedModule]['settings'][5] = config.dependencies[selectedModule]['settings'][5].format([masterUrl])
+    }
+
+    if (selectedModule == "common-data-starter-cache") {
+        var defaultName = config.defaultSettings[selectedModule]['name']
+        var defaultConnection = config.defaultSettings[selectedModule]['connection']
+        var defaultPassword = config.defaultSettings[selectedModule]['password']
+
+        var userName = readlineSync.question('Enter resouceName: (default is: {0})'.format([chalk.green(defaultName)]), {defaultInput: defaultName});
+        var connection = readlineSync.question('Enter redis connection: (default is: {0})'.format([chalk.green(defaultConnection)]), {defaultInput: defaultConnection});
+        var password = readlineSync.question('Enter redis password: (default is: {0})'.format([chalk.green(defaultPassword)]), {defaultInput: defaultPassword});
+
+        config.dependencies[selectedModule]['settings'][1] = config.dependencies[selectedModule]['settings'][1].format([userName])
+        config.dependencies[selectedModule]['settings'][2] = config.dependencies[selectedModule]['settings'][2].format([connection])
+        config.dependencies[selectedModule]['settings'][3] = config.dependencies[selectedModule]['settings'][3].format([password])
+    }
+
+    if (selectedModule == "common-data-starter-kafka") {
+        var defaultServers = config.defaultSettings[selectedModule]['servers']
+        var defaultGroupID = config.defaultSettings[selectedModule]['groupID']
+        var defaultMaxPollRecords = config.defaultSettings[selectedModule]['maxPollRecords']
+
+        var servers = readlineSync.question('Enter kafka servers: (default is: {0})'.format([chalk.green(defaultServers)]), {defaultInput: defaultServers});
+        var groupID = readlineSync.question('Enter consumer groupId: (default is: {0})'.format([chalk.green(defaultGroupID)]), {defaultInput: defaultGroupID});
+        var maxPollRecords = readlineSync.question('Enter maxPollRecords: (default is: {0})'.format([chalk.green(defaultMaxPollRecords)]), {defaultInput: defaultMaxPollRecords});
+    }
+
+    if (selectedModule == "common-data-starter-kylin-jdbc") {
+        var defaultProjectName = config.defaultSettings[selectedModule]['ProjectName']
+        var defaultUserName = config.defaultSettings[selectedModule]['userName']
+        var defaultPassword = config.defaultSettings[selectedModule]['password']
+        var defaultConnectionUrl = config.defaultSettings[selectedModule]['connectionUrl']
+
+        var projectName = readlineSync.question('Enter defaultProjectName: (default is: {0})'.format([chalk.green(defaultProjectName)]), {defaultInput: defaultProjectName});
+        var userName = readlineSync.question('Enter userName: (default is: {0})'.format([chalk.green(defaultUserName)]), {defaultInput: defaultUserName});
+        var password = readlineSync.question('Enter password: (default is: {0})'.format([chalk.green(defaultPassword)]), {defaultInput: defaultPassword});
+        var connectionUrl = readlineSync.question('Enter connectionUrl: (default is: {0})'.format([chalk.green(defaultConnectionUrl)]), {defaultInput: defaultConnectionUrl});
+
+        config.dependencies[selectedModule]['settings'][1] = config.dependencies[selectedModule]['settings'][1].format([projectName])
+        config.dependencies[selectedModule]['settings'][2] = config.dependencies[selectedModule]['settings'][2].format([userName])
+        config.dependencies[selectedModule]['settings'][3] = config.dependencies[selectedModule]['settings'][3].format([password])
+        config.dependencies[selectedModule]['settings'][5] = config.dependencies[selectedModule]['settings'][5].format([connectionUrl])
     }
 }
