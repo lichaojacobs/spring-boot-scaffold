@@ -41,6 +41,7 @@ var clone = require("git-clone");
 var readlineSync = require('readline-sync');
 var replace = require("replace");
 var templateUrl = "https://github.com/lichaojacobs/spring-boot-scaffold.git"
+var defaultDockerMaintainer = "chaoli@mobvoi.com"
 
 console.log('Start generating springboot template...');
 
@@ -50,6 +51,7 @@ var groupId = readlineSync.question('Enter groupId: ');
 console.log(chalk.green(groupId));
 var artifactId = readlineSync.question('Enter artifactId: ');
 console.log(chalk.green(artifactId));
+var dockerMaintainer = readlineSync.question('Enter dockerMaintainer: (default is: {0})'.format([chalk.green(defaultDockerMaintainer)]), {defaultInput: defaultDockerMaintainer});
 
 var config = require("./settings")
 var chooseCondition = true;
@@ -73,10 +75,10 @@ while (chooseCondition) {
 }
 
 console.log(chalk.green(selectedModules.length + " of modules have been selected "));
-initializeProject(projectName, groupId, artifactId, selectedModules, nonSelectedModules);
+initializeProject(projectName, groupId, artifactId, dockerMaintainer, selectedModules, nonSelectedModules);
 
 
-function initializeProject(projectName, groupId, artifactId, selectedModules, nonSelectedModules) {
+function initializeProject(projectName, groupId, artifactId, dockerMaintainer, selectedModules, nonSelectedModules) {
     var root = path.resolve(projectName);
     var appName = path.basename(root);
     checkDuplicateProject(appName);
@@ -119,6 +121,9 @@ function initializeProject(projectName, groupId, artifactId, selectedModules, no
         var packageName = groupId + "." + projectName.split("-")[0]
         console.log(chalk.green("Replace packageName..."));
         replaceVariables("#packageName", packageName)
+
+        console.log(chalk.green("Replace dockerMaintainer..."));
+        replaceVariables("#dockerMaintainer", dockerMaintainer)
 
         var sourceSets = [
             "./src/main/java",
@@ -201,6 +206,10 @@ function fillModuleSettings(selectedModule) {
         var servers = readlineSync.question('Enter kafka servers: (default is: {0})'.format([chalk.green(defaultServers)]), {defaultInput: defaultServers});
         var groupID = readlineSync.question('Enter consumer groupId: (default is: {0})'.format([chalk.green(defaultGroupID)]), {defaultInput: defaultGroupID});
         var maxPollRecords = readlineSync.question('Enter maxPollRecords: (default is: {0})'.format([chalk.green(defaultMaxPollRecords)]), {defaultInput: defaultMaxPollRecords});
+
+        config.dependencies[selectedModule]['settings'][1] = config.dependencies[selectedModule]['settings'][1].format([servers])
+        config.dependencies[selectedModule]['settings'][2] = config.dependencies[selectedModule]['settings'][2].format([groupID])
+        config.dependencies[selectedModule]['settings'][3] = config.dependencies[selectedModule]['settings'][3].format([maxPollRecords])
     }
 
     if (selectedModule == "common-data-starter-kylin-jdbc") {
