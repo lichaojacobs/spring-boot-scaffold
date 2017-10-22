@@ -21,11 +21,11 @@ var templateUrl = "https://github.com/lichaojacobs/spring-boot-scaffold.git"
 console.log('Start generating springboot template...');
 
 var projectName = readlineSync.question('Enter projectName: ');
-console.log(projectName);
+console.log(chalk.green(projectName));
 var groupId = readlineSync.question('Enter groupId: ');
-console.log(groupId);
+console.log(chalk.green(groupId));
 var artifactId = readlineSync.question('Enter artifactId: ');
-console.log(artifactId);
+console.log(chalk.green(artifactId));
 
 var chooseCondition = true;
 
@@ -33,7 +33,6 @@ var selectedModules = [];
 var nonSelectedModules = projectModules;
 while (chooseCondition) {
     if (projectModules.length == 0) {
-        console.log("all modules are selected");
         break;
     }
     var index = readlineSync.keyInSelect(projectModules, 'Please select module you want to add to project. ');
@@ -42,16 +41,13 @@ while (chooseCondition) {
         chooseCondition = false
         continue;
     }
-    console.log(projectModules[index] + ' is added.');
+    console.log(chalk.green(projectModules[index] + ' is added.'));
     //remove selected  module
     selectedModules.push(projectModules[index])
     projectModules.splice(index, 1); //0 represent nothing will be deleted
 }
 
-console.log(selectedModules.length + " of modules have been selected ");
-for (var i = 0; i < selectedModules.length; i++) {
-    console.log(selectedModules[i]);
-}
+console.log(chalk.green(selectedModules.length + " of modules have been selected "));
 initializeProject(projectName, groupId, artifactId, selectedModules, nonSelectedModules);
 
 
@@ -65,13 +61,13 @@ function initializeProject(projectName, groupId, artifactId, selectedModules, no
     // 当前目录
     var originalDirectory = process.cwd();
     process.chdir(root);
-    console.log("初始化 " + chalk.green(projectName));
+    console.log(chalk.green("Initialize " + projectName + "..."));
 
     clone(templateUrl, ".tmp", {checkout: 'master'}, function () {
         fs.copySync("./.tmp/generate-template", "./");
         fs.removeSync(".tmp");
 
-        console.log("add modules...");
+        console.log(chalk.green("Add modules..."));
         var config = require("./settings")
         for (var i = 0; i < selectedModules.length; i++) {
             //yaml 配置文件
@@ -89,18 +85,18 @@ function initializeProject(projectName, groupId, artifactId, selectedModules, no
             replaceVariables("#" + nonSelectedModules[i], "")
         }
 
-        console.log("replace groupId...");
+        console.log(chalk.green("Replace groupId..."));
         replaceVariables("#groupId", groupId)
 
-        console.log("replace projectName...");
+        console.log(chalk.green("Replace projectName..."));
         replaceVariables("#projectName", projectName)
 
-        console.log("replace artifactId...");
+        console.log(chalk.green("Replace artifactId..."));
         replaceVariables("#artifactId", artifactId)
 
         // in case projectName like "demo-api"
         var packageName = groupId + "." + projectName.split("-")[0]
-        console.log("replace packageName...");
+        console.log(chalk.green("Replace packageName..."));
         replaceVariables("#packageName", packageName)
 
         var sourceSets = [
@@ -118,7 +114,7 @@ function initializeProject(projectName, groupId, artifactId, selectedModules, no
             fs.removeSync(sourceSet + "/template");
         });
 
-        console.log("project initialization done... \n");
+        console.log(chalk.green("project initialization done... \n"));
 
     })
 }
