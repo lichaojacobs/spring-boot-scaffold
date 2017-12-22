@@ -40,8 +40,8 @@ var path = require("path");
 var clone = require("git-clone");
 var readlineSync = require('readline-sync');
 var replace = require("replace");
-var templateUrl = "https://github.com/lichaojacobs/spring-boot-scaffold.git"
-var defaultDockerMaintainer = "chaoli@mobvoi.com"
+var templateUrl = "https://github.com/lichaojacobs/spring-boot-scaffold.git";
+var defaultDockerMaintainer = "growth_platform@mobvoi.com";
 
 console.log('Start generating springboot template...');
 
@@ -51,7 +51,7 @@ var groupId = readlineSync.question('Enter groupId: ');
 console.log(chalk.green(groupId));
 var artifactId = readlineSync.question('Enter artifactId: ');
 console.log(chalk.green(artifactId));
-var dockerMaintainer = readlineSync.question('Enter dockerMaintainer: (default is: {0})'.format([chalk.green(defaultDockerMaintainer)]), {defaultInput: defaultDockerMaintainer});
+var dockerMaintainer = readlineSync.question('Enter dockerMaintainer(default is: {0}):'.format([chalk.green(defaultDockerMaintainer)]), {defaultInput: defaultDockerMaintainer});
 
 var config = require("./settings")
 var chooseCondition = true;
@@ -100,7 +100,7 @@ function initializeProject(projectName, groupId, artifactId, dockerMaintainer, s
                 replaceVariables("#{0}-settings".format([selectedModules[i]]), config.dependencies[selectedModules[i]]["settings"].join("\r\n"))
             }
             //pom 配置文件
-            replaceVariables("#{0".format(selectedModules[i]), config.dependencies[selectedModules[i]]["dependency"].join("\r\n\t\t"))
+            replaceVariables("#{0}".format(selectedModules[i]), config.dependencies[selectedModules[i]]["dependency"].join("\r\n\t\t"))
         }
 
         for (var i = 0; i < nonSelectedModules.length; i++) {
